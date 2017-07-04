@@ -16,6 +16,12 @@
         <version.library.diorite-commons>1.0-SNAPSHOT</version.library.diorite-commons>
     </properties>
 
+    <scm>
+        <connection>scm:git:https://github.com/GotoFinal/diorite-configs-java8.git</connection>
+        <developerConnection>scm:git:https://github.com/GotoFinal/diorite-configs-java8.git</developerConnection>
+        <url>https://github.com/GotoFinal/diorite-configs-java8</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>com.gotofinal</groupId>
@@ -44,4 +50,12 @@
             <url>https://repo.diorite.org/repository/diorite/</url>
         </repository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <name>Diorite repository</name>
+            <id>diorite</id>
+            <url>https://repo.diorite.org/repository/diorite/</url>
+        </repository>
+    </repositories>
 </project>
