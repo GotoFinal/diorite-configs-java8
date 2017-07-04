@@ -52,9 +52,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
@@ -699,16 +696,15 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
         this.orderedProperties = Collections.unmodifiableMap(orderedProperties);
 
         Map<ConfigPropertyActionInstance, ConfigPropertyTemplate<?>> actions = this.actions;
-        Multimap<ConfigPropertyTemplate<?>, ConfigPropertyActionInstance> actionsMultimap =
-                Multimaps.newMultimap(new LinkedHashMap<>(this.order.size()), () -> new ArrayList<>(5));
+        Map<ConfigPropertyTemplate<?>, Collection<ConfigPropertyActionInstance>> actionsMultimap = new LinkedHashMap<>(this.order.size());
         for (Entry<ConfigPropertyActionInstance, ConfigPropertyTemplate<?>> entry : actions.entrySet())
         {
-            actionsMultimap.put(entry.getValue(), entry.getKey());
+            actionsMultimap.computeIfAbsent(entry.getValue(), k -> new ArrayList<>(5)).add(entry.getKey());
         }
         Map<ConfigPropertyActionInstance, ConfigPropertyTemplate<?>> orderedActions = new LinkedHashMap<>(actions.size());
         for (ConfigPropertyTemplate<?> configPropertyTemplate : this.orderedProperties.values())
         {
-            Collection<ConfigPropertyActionInstance> actionInstances = actionsMultimap.get(configPropertyTemplate);
+            Collection<ConfigPropertyActionInstance> actionInstances = actionsMultimap.getOrDefault(configPropertyTemplate, Collections.emptyList());
             for (ConfigPropertyActionInstance actionInstance : actionInstances)
             {
                 orderedActions.put(actionInstance, configPropertyTemplate);

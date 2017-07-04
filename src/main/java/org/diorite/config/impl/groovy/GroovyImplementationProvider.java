@@ -28,13 +28,9 @@ import javax.annotation.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
-
-import com.google.common.collect.ImmutableList;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -220,7 +216,7 @@ public class GroovyImplementationProvider implements ConfigImplementationProvide
         try
         {
             GroovyClassLoader groovyClassLoader = this.configManager.getGroovyClassLoader();
-            Class<? extends Tezd> eval =
+            Class<?> eval =
                     groovyClassLoader.parseClass(classCode, GroovyImplementationProvider.class.getPackage().getName() + ".gen." + clazz.getCanonicalName());
             if (eval == null)
             {
@@ -308,19 +304,5 @@ public class GroovyImplementationProvider implements ConfigImplementationProvide
             Serialization.getInstance().registerSerializer(new ConfigDeserializer<>(SimpleConfig.class));
         }
         return apply;
-    }
-
-    public interface Tezd extends Config
-    {
-        int getHuh();
-
-        void setHuh(int huh);
-
-        Locale getLocale();
-
-        default List<? extends Number> getList()
-        {
-            return ImmutableList.of(1, 2, 3);
-        }
     }
 }

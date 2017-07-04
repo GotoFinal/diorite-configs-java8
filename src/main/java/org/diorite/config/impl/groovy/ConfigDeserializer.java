@@ -24,12 +24,13 @@
 
 package org.diorite.config.impl.groovy;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
 
 import org.yaml.snakeyaml.nodes.Tag;
 
@@ -138,7 +139,7 @@ public class ConfigDeserializer<T extends Config> implements Serializer<T>
         }
     }
 
-    private static final Set<Tag> sectionTags = ImmutableSet.of(Tag.MAP, Tag.OMAP, new Tag(SimpleConfig.class));
+    private static final Set<Tag> sectionTags = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(Tag.MAP, Tag.OMAP, new Tag(SimpleConfig.class))));
 
     @SuppressWarnings("unchecked")
     @Override

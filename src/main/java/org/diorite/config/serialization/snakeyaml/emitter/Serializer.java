@@ -27,15 +27,15 @@ package org.diorite.config.serialization.snakeyaml.emitter;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.collect.ImmutableList;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.Version;
@@ -88,7 +88,7 @@ public final class Serializer
     boolean checkCommentsSet(String[] path)
     {
         this.comments.fixPath(path);
-        List<String> key = ImmutableList.copyOf(path);
+        List<String> key = Collections.unmodifiableList(Arrays.asList(path.clone()));
         return this.commentsSet.add(key);
     }
 

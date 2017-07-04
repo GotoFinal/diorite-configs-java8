@@ -38,8 +38,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -53,7 +55,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -182,8 +183,8 @@ public final class Serialization
     private final Map<Class<?>, StringSerializer<?>> stringSerializerMap = new ConcurrentHashMap<>(10);
     private final Map<Class<?>, Serializer<?>>       serializerMap       = new ConcurrentHashMap<>(10);
 
-    private final Set<String> trueValues  = Sets.newHashSet("true", "enabled", "enable", "yes", "y", "e", "t", "on");
-    private final Set<String> falseValues = Sets.newHashSet("false", "disabled", "disable", "no", "n", "d", "f", "off");
+    private final Set<String> trueValues  = new HashSet<>(Arrays.asList("true", "enabled", "enable", "yes", "y", "e", "t", "on"));
+    private final Set<String> falseValues = new HashSet<>(Arrays.asList("false", "disabled", "disable", "no", "n", "d", "f", "off"));
 
     /**
      * Add string values that can be interpreted as {@link Boolean#TRUE} value when reading from config.

@@ -27,12 +27,11 @@ package org.diorite.config;
 import javax.annotation.RegEx;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -67,7 +66,7 @@ public abstract class AbstractPropertyAction implements ConfigPropertyAction
         {
             patterns[i] = Pattern.compile("^" + strPatterns[i] + "$");
         }
-        this.patterns = Lists.newArrayList(patterns);
+        this.patterns = Arrays.asList(patterns.clone());
     }
 
     /**
@@ -81,7 +80,7 @@ public abstract class AbstractPropertyAction implements ConfigPropertyAction
     protected AbstractPropertyAction(String name, Pattern... patterns)
     {
         this.name = name;
-        this.patterns = Lists.newArrayList(patterns);
+        this.patterns = Arrays.asList(patterns.clone());
     }
 
     /**
