@@ -492,9 +492,9 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
             ConfigPropertyTemplateImpl<?> propertyTemplate = this.mutableProperties.get(property);
             if (propertyTemplate != null)
             {
+                propIterator.remove();
                 if (! processedValidators.add(new SimpleEntry<>(property, methodInvoker)))
                 {
-                    propIterator.remove();
                     continue;
                 }
                 ValidatorFunction<Config, ?> validator = this.createValidator(methodInvoker, propertyTemplate);
