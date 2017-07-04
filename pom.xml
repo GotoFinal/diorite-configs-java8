@@ -13,7 +13,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <version.library.diorite-commons>1.2-SNAPSHOT</version.library.diorite-commons>
+        <version.library.diorite-commons>1.1</version.library.diorite-commons>
         <version.library.fastutil>7.0.13</version.library.fastutil>
         <version.library.jsr305>3.0.1</version.library.jsr305>
         <version.library.intellij-annotations>15.0</version.library.intellij-annotations>
