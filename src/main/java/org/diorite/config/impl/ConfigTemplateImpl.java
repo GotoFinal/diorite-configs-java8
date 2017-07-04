@@ -128,19 +128,9 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
                 methods.add(methodInvoker);
                 continue;
             }
-            if (methodInvoker.isPublic())
-            {
-                methods.add(methodInvoker);
-                continue;
-            }
-            if (methodInvoker.isAnnotationPresent(ToKeyMapperFunction.class) || methodInvoker.isAnnotationPresent(ToStringMapperFunction.class))
-            {
-                methods.add(methodInvoker);
-                continue;
-            }
             if (methodInvoker.isAnnotationPresent(Validator.class))
             {
-                if (methodInvoker.isDefault() || methodInvoker.isPrivate())
+                if (methodInvoker.isDefault() || methodInvoker.isPrivate() || methodInvoker.isStatic())
                 {
                     if (methodInvoker.getParameterCount() == 1)
                     {
@@ -150,6 +140,11 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
                     else if (methodInvoker.isStatic() && ((methodInvoker.getParameterCount() == 2) || (methodInvoker.getParameterCount() == 1)))
                     {
                         Parameter[] parameters = methodInvoker.getParameters();
+                        if (parameters.length == 1)
+                        {
+                            methods.add(methodInvoker);
+                            continue;
+                        }
                         if (parameters[0].getType().isAssignableFrom(this.type) || parameters[1].getType().isAssignableFrom(this.type))
                         {
                             methods.add(methodInvoker);
@@ -158,6 +153,16 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
                     }
                 }
                 throw this.throwInvalidValidatorMethodException(methodInvoker);
+            }
+            if (methodInvoker.isPublic())
+            {
+                methods.add(methodInvoker);
+                continue;
+            }
+            if (methodInvoker.isAnnotationPresent(ToKeyMapperFunction.class) || methodInvoker.isAnnotationPresent(ToStringMapperFunction.class))
+            {
+                methods.add(methodInvoker);
+                continue;
             }
         }
         for (Class<?> subType : type.getInterfaces())
@@ -169,7 +174,7 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
     private IllegalStateException throwInvalidValidatorMethodException(MethodInvoker methodInvoker)
     {
         throw new IllegalStateException("Invalid validator method! Validator method should be non static method with single argument or static method" +
-                                        " with two or one arguments where second one is config instance.\n    Instead this method was found: " + methodInvoker +
+                                        " with one or two arguments where second one is config instance.\n    Instead this method was found: " + methodInvoker +
                                         "\n    Example methods:\n" +
                                         "        private T validateName(T name){...}\n" +
                                         "        default void validateSomething(T something){...}\n" +
@@ -484,14 +489,14 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
         for (Iterator<String> propIterator = properties.iterator(); propIterator.hasNext(); )
         {
             String property = propIterator.next();
-            if (! processedValidators.add(new SimpleEntry<>(property, methodInvoker)))
-            {
-                propIterator.remove();
-                continue;
-            }
             ConfigPropertyTemplateImpl<?> propertyTemplate = this.mutableProperties.get(property);
             if (propertyTemplate != null)
             {
+                if (! processedValidators.add(new SimpleEntry<>(property, methodInvoker)))
+                {
+                    propIterator.remove();
+                    continue;
+                }
                 ValidatorFunction<Config, ?> validator = this.createValidator(methodInvoker, propertyTemplate);
                 propertyTemplate.appendValidator((ValidatorFunction) validator);
             }
