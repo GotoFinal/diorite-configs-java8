@@ -13,7 +13,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <version.library.diorite-commons>1.0-SNAPSHOT</version.library.diorite-commons>
+        <version.library.diorite-commons>1.0</version.library.diorite-commons>
     </properties>
 
     <scm>
