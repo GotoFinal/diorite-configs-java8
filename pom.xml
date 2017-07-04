@@ -6,14 +6,14 @@
 
     <groupId>com.gotofinal</groupId>
     <artifactId>diorite-configs-java8</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <version.library.diorite-commons>1.1-SNAPSHOT</version.library.diorite-commons>
+        <version.library.diorite-commons>1.1</version.library.diorite-commons>
         <version.library.fastutil>7.0.13</version.library.fastutil>
         <version.library.jsr305>3.0.1</version.library.jsr305>
         <version.library.intellij-annotations>15.0</version.library.intellij-annotations>
