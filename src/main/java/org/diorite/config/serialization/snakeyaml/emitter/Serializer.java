@@ -27,6 +27,7 @@ package org.diorite.config.serialization.snakeyaml.emitter;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,14 +62,21 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.resolver.Resolver;
-import org.yaml.snakeyaml.serializer.AnchorGenerator;
 import org.yaml.snakeyaml.serializer.SerializerException;
 
+import org.diorite.commons.reflections.DioriteReflectionUtils;
 import org.diorite.config.serialization.Serialization;
 import org.diorite.config.serialization.comments.DocumentComments;
 
 public final class Serializer
 {
+    private static final boolean hasAnchorGenerator = DioriteReflectionUtils.tryGetCanonicalClass("org.yaml.snakeyaml.serializer.AnchorGenerator") != null;
+
+    interface AnchorGenerator  // compatibility
+    {
+        String nextAnchor(Node node);
+    }
+
     private final           Serialization       serialization;
     private final           EmitableWrapper     emitter;
     private final           Resolver            resolver;
@@ -78,7 +86,7 @@ public final class Serializer
     private final           Map<String, String> useTags;
     private final           Set<Node>           serializedNodes;
     private final           Map<Node, String>   anchors;
-    private final           AnchorGenerator     anchorGenerator;
+    private final           AnchorGenerator     anchorGenerator; // compatibility
     @Nullable private       Boolean             closed;
     @Nullable private final Tag                 explicitRoot;
 
@@ -106,7 +114,17 @@ public final class Serializer
         this.useTags = opts.getTags();
         this.serializedNodes = new HashSet<>(50);
         this.anchors = new HashMap<>(10);
-        this.anchorGenerator = opts.getAnchorGenerator();
+
+        // compatibility
+        if (! hasAnchorGenerator)
+        {
+            this.anchorGenerator = new NumberAnchorGenerator();
+        }
+        else
+        {
+            Object anchorGenerator = opts.getAnchorGenerator();
+            this.anchorGenerator = ((org.yaml.snakeyaml.serializer.AnchorGenerator) anchorGenerator)::nextAnchor;
+        }
         this.closed = null;
         this.explicitRoot = rootTag;
     }
@@ -316,6 +334,23 @@ public final class Serializer
                     }
                     this.emitter.emit(new MappingEndEvent(null, null));
             }
+        }
+    }
+
+    private static class NumberAnchorGenerator implements AnchorGenerator
+    {
+        private int lastAnchorId = 0;
+
+        @Override
+        public String nextAnchor(Node node)
+        {
+            this.lastAnchorId++;
+            NumberFormat format = NumberFormat.getNumberInstance();
+            format.setMinimumIntegerDigits(3);
+            format.setMaximumFractionDigits(0);// issue 172
+            format.setGroupingUsed(false);
+            String anchorId = format.format(this.lastAnchorId);
+            return "id" + anchorId;
         }
     }
 }

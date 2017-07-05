@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,6 +79,54 @@ import org.diorite.config.serialization.snakeyaml.DumperOptions;
  */
 public final class Emitter implements Emitable
 {
+    // for backward compatibility
+    private static final ToIntFunction<org.yaml.snakeyaml.DumperOptions> getIndicatorIndent;
+    private static final Predicate<org.yaml.snakeyaml.DumperOptions>     getSplitLines;
+
+    static
+    {
+        {
+            boolean valid;
+            try
+            {
+                new DumperOptions().getIndicatorIndent();
+                valid = true;
+            }
+            catch (Throwable e)
+            {
+                valid = false;
+            }
+            if (valid)
+            {
+                getIndicatorIndent = org.yaml.snakeyaml.DumperOptions::getIndicatorIndent;
+            }
+            else
+            {
+                getIndicatorIndent = opt -> 0;
+            }
+        }
+        {
+            boolean valid;
+            try
+            {
+                new DumperOptions().getSplitLines();
+                valid = true;
+            }
+            catch (Throwable e)
+            {
+                valid = false;
+            }
+            if (valid)
+            {
+                getSplitLines = org.yaml.snakeyaml.DumperOptions::getSplitLines;
+            }
+            else
+            {
+                getSplitLines = opt -> true;
+            }
+        }
+    }
+
     private static final Map<Character, String> ESCAPE_REPLACEMENTS = new HashMap<>(15);
     public static final  int                    MIN_INDENT          = 1;
     public static final  int                    MAX_INDENT          = 10;
@@ -224,14 +274,14 @@ public final class Emitter implements Emitable
         {
             this.bestIndent = opts.getIndent();
         }
-        this.indicatorIndent = opts.getIndicatorIndent();
+        this.indicatorIndent = getIndicatorIndent.applyAsInt(opts); // compatibility
         this.bestWidth = BEST_WIDTH;
         if (opts.getWidth() > (this.bestIndent * 2))
         {
             this.bestWidth = opts.getWidth();
         }
         this.bestLineBreak = opts.getLineBreak().getString().toCharArray();
-        this.splitLines = opts.getSplitLines();
+        this.splitLines = getSplitLines.test(opts); // compatibility
         this.longCommentThreshold = opts.getLongCommentThreshold();
         this.longCommentBorder = opts.getLongCommentBorder();
         this.longCommentBorderStartsWithComment = ! this.longCommentBorder.isEmpty() && (this.longCommentBorder.charAt(0) == '#');
@@ -677,7 +727,7 @@ public final class Emitter implements Emitable
 
     String prepareVersion(Version version)
     {
-        if (version.major() != 1)
+        if (version.getRepresentation().startsWith("1.")) // compatibility
         {
             throw new EmitterException("unsupported YAML version: " + version);
         }

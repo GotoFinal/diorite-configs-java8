@@ -47,9 +47,12 @@ import org.yaml.snakeyaml.nodes.Tag;
 
 import org.diorite.commons.arrays.DioriteArrayUtils;
 import org.diorite.commons.reflections.DioriteReflectionUtils;
+import org.diorite.commons.reflections.MethodInvoker;
 
 public class YamlConstructor extends Constructor
 {
+    private static final MethodInvoker constructDocument = DioriteReflectionUtils.getMethod(YamlConstructor.class, "constructFromNode", Node.class);
+
     public YamlConstructor()
     {
         YamlCollectionCreator.createCollection(List.class, 1); // ensure fully loaded.
@@ -70,7 +73,7 @@ public class YamlConstructor extends Constructor
     @Nullable
     public Object constructFromNode(Node node)
     {
-        return this.constructDocument(node);
+        return constructDocument.invoke(this, node);
     }
 
     @Override

@@ -200,7 +200,6 @@ import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
-import org.yaml.snakeyaml.reader.StreamReader;
 
 public abstract class AbstractRepresent extends Representer.AbstractRepresent
 {
@@ -214,32 +213,68 @@ public abstract class AbstractRepresent extends Representer.AbstractRepresent
         return this.representer.representScalar(this.representer.getTag(uuid.getClass(), new Tag(UUID.class)), uuid.toString());
     }
 
+    private static boolean isPrintable(String data)
+    {
+        int length = data.length();
+
+        int codePoint;
+        for (int offset = 0; offset < length; offset += Character.charCount(codePoint))
+        {
+            codePoint = data.codePointAt(offset);
+            if (! isPrintable(codePoint))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @SuppressWarnings("MagicNumber")
+    private static boolean isPrintable(int c)
+    {
+        return ((c >= 0x20) && (c <= 0x7E)) || (c == 0x9) || (c == 0xA) || (c == 0xD)
+               || (c == 0x85) || ((c >= 0xA0) && (c <= 0xD7FF))
+               || ((c >= 0xE000) && (c <= 0xFFFD))
+               || ((c >= 0x10000) && (c <= 0x10FFFF));
+    }
+
     public final Node representString(String data)
     {
         Tag tag = Tag.STR;
         Character style = null;
-        if (StreamReader.NON_PRINTABLE.matcher(data).find())
+        String value = data;
+        if (! isPrintable(value))
         {
             tag = Tag.BINARY;
+
             char[] binary;
             try
             {
-                binary = Base64Coder.encode(data.getBytes("UTF-8"));
+                byte[] bytes = value.getBytes("UTF-8");
+                String checkValue = new String(bytes, "UTF-8");
+                if (! checkValue.equals(value))
+                {
+                    throw new YAMLException("invalid string value has occurred");
+                }
+
+                binary = Base64Coder.encode(bytes);
             }
-            catch (UnsupportedEncodingException e)
+            catch (UnsupportedEncodingException var8)
             {
-                throw new YAMLException(e);
+                throw new YAMLException(var8);
             }
-            data = String.valueOf(binary);
+
+            value = String.valueOf(binary);
             style = '|';
         }
-        // if no other scalar style is explicitly set, use literal style for
-        // multiline scalars
-        if ((this.getDefaultScalarStyle() == null) && Representer.MULTILINE_PATTERN.matcher(data).find())
+
+        if ((this.getDefaultScalarStyle() == null) && Representer.MULTILINE_PATTERN.matcher(value).find())
         {
             style = '|';
         }
-        return this.representer.representScalar(tag, data, style);
+
+        return this.representer.representScalar(tag, value, style);
     }
 
     public final Node representSet(Set<?> data)
