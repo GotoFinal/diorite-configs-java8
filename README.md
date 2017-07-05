@@ -26,7 +26,7 @@ Also configs depends on *diorite-commons-java8, snakeyaml, gson, apache commons 
 Additionally some utilities and/or serializers have support for *fastutil* and *vecmath* libraries, but they are optional.
 
 ## Usage
-Basic ide of diorite configs is to represent configuration files as simple interfaces like:
+Basic idea of diorite configs is to represent configuration files as simple interfaces like:
 ```java
 import java.util.List;
 import java.util.UUID;
