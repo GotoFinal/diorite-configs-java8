@@ -184,7 +184,7 @@ default SomeType storageValidator(SomeType data)
     if (data.something() > 100) {
         throw new RuntimeException("Too big");
     }
-    return storage;
+    return data;
 }
 ```
 `@Validator` can specify name of property that will be validated by it, or even validate more than one property: `@Validator({"x", "y"})`.  
