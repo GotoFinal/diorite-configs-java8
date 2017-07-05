@@ -43,6 +43,22 @@ import org.diorite.config.ConfigTemplate;
  */
 public final class ValidationException extends RuntimeException
 {
+    private static final ToStringStyle toStringStyle;
+
+    static
+    {
+        ToStringStyle tmp;
+        try
+        {
+            tmp = ToStringStyle.JSON_STYLE;
+        }
+        catch (Throwable e)
+        {
+            tmp = ToStringStyle.SHORT_PREFIX_STYLE;
+        }
+        toStringStyle = tmp;
+    }
+
     private static final long serialVersionUID = 0;
 
     private <T> ValidationException(String message, Throwable cause)
@@ -82,7 +98,7 @@ public final class ValidationException extends RuntimeException
 
             if ((rawValue != null) && ! DioriteReflectionUtils.getPrimitive(rawValue.getClass()).isPrimitive())
             {
-                expBuilder.append(" (").append(ReflectionToStringBuilder.toString(template.getRawType(), ToStringStyle.JSON_STYLE)).append(")");
+                expBuilder.append(" (").append(ReflectionToStringBuilder.toString(template.getRawType(), toStringStyle)).append(")");
             }
             expBuilder.append("\n");
         }
@@ -96,7 +112,7 @@ public final class ValidationException extends RuntimeException
         {
             try
             {
-                expBuilder.append(" (").append(ReflectionToStringBuilder.toString(value, ToStringStyle.JSON_STYLE)).append(")");
+                expBuilder.append(" (").append(ReflectionToStringBuilder.toString(value, toStringStyle)).append(")");
             }
             catch (Exception ignored)
             {

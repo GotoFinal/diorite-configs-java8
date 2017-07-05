@@ -136,17 +136,46 @@ public abstract class AbstractPropertyAction implements ConfigPropertyAction
                                       "{\n" +
                                       addMethodIndent(this.getGroovyImplementation0(method, propertyTemplate, actionInstance)) +
                                       "}\n";
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$type", propertyTemplate.getGenericType().getTypeName());
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$rawType", propertyTemplate.getGenericType().getTypeName());
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$returnType", method.getGenericReturnType().getTypeName());
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$property", propertyTemplate.getOriginalName());
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$propName", propertyTemplate.getName());
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$value", "this.@" + propertyTemplate.getOriginalName() + ".propertyValue");
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$rawValue", "this.@" + propertyTemplate.getOriginalName() + ".rawValue");
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$propType", "this.@" + propertyTemplate.getOriginalName() + ".rawType");
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$returnOrNothing", (method.getReturnType() == void.class) ? "" : "return");
-        groovyImplementation = StringUtils.replaceIgnoreCase(groovyImplementation, "$nullOrNothing", (method.getReturnType() == void.class) ? "" : "null");
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$type", propertyTemplate.getGenericType().getTypeName());
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$rawType", propertyTemplate.getGenericType().getTypeName());
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$returnType", method.getGenericReturnType().getTypeName());
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$property", propertyTemplate.getOriginalName());
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$propName", propertyTemplate.getName());
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$value", "this.@" + propertyTemplate.getOriginalName() + ".propertyValue");
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$rawValue", "this.@" + propertyTemplate.getOriginalName() + ".rawValue");
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$propType", "this.@" + propertyTemplate.getOriginalName() + ".rawType");
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$returnOrNothing", (method.getReturnType() == void.class) ? "" : "return");
+        groovyImplementation = replaceIgnoreCase(groovyImplementation, "$nullOrNothing", (method.getReturnType() == void.class) ? "" : "null");
         return groovyImplementation;
+    }
+
+    private static String replaceIgnoreCase(String text, String searchString, String replacement)
+    {
+        if (text.isEmpty() || searchString.isEmpty())
+        {
+            return text;
+        }
+        String searchText = text.toLowerCase();
+        searchString = searchString.toLowerCase();
+        int start = 0;
+        int end = searchText.indexOf(searchString, start);
+        if (end == - 1)
+        {
+            return text;
+        }
+        int replLength = searchString.length();
+        int increase = replacement.length() - replLength;
+        increase = (increase < 0) ? 0 : increase;
+        increase *= 16;
+        StringBuilder buf = new StringBuilder(text.length() + increase);
+        while (end != - 1)
+        {
+            buf.append(text.substring(start, end)).append(replacement);
+            start = end + replLength;
+            end = searchText.indexOf(searchString, start);
+        }
+        buf.append(text.substring(start));
+        return buf.toString();
     }
 
     @SuppressWarnings("MagicNumber")
