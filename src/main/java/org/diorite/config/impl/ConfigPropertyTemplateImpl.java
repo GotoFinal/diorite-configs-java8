@@ -418,12 +418,23 @@ public class ConfigPropertyTemplateImpl<T> implements ConfigPropertyTemplate<T>
         else if (this.genericType instanceof ParameterizedType)
         {
             Type type = ((ParameterizedType) this.genericType).getActualTypeArguments()[0];
-            if (type instanceof WildcardType)
+            while (true)
             {
-                Type[] upperBounds = ((WildcardType) type).getUpperBounds();
-                type = (upperBounds.length == 0) ? null : upperBounds[0];
+                if (type instanceof WildcardType)
+                {
+                    Type[] upperBounds = ((WildcardType) type).getUpperBounds();
+                    type = (upperBounds.length == 0) ? null : upperBounds[0];
+                }
+                if (type instanceof ParameterizedType)
+                {
+                    type = ((ParameterizedType) type).getRawType();
+                }
+                if (type instanceof Class)
+                {
+                    collectionType = (Class<?>) type;
+                    break;
+                }
             }
-            collectionType = (type instanceof Class) ? (Class<?>) type : null;
         }
         if (collectionType == null)
         {
