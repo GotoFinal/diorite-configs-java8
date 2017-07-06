@@ -239,8 +239,8 @@ public class ConfigPropertyTemplateImpl<T> implements ConfigPropertyTemplate<T>
                     this.serializeFunc = (data, val) -> data.addMap(key, ((Map) val.getPropertyValue()), valueType);
                     this.deserializeFunc = (data, val) ->
                     {
-                        Object collection = YamlCollectionCreator.createCollection(this.rawType, 10);
-                        data.getMap(key, s -> this.toKeyMapper.apply(val.getDeclaringConfig(), s), valueType);
+                        Map collection = YamlCollectionCreator.createCollection(this.rawType, 10);
+                        data.getMap(key, s -> this.toKeyMapper.apply(val.getDeclaringConfig(), s), valueType, collection);
                         val.setPropertyValue(collection);
                     };
                 }
@@ -249,8 +249,8 @@ public class ConfigPropertyTemplateImpl<T> implements ConfigPropertyTemplate<T>
                     this.serializeFunc = (data, val) -> data.addMap(key, ((Map) val.getPropertyValue()), keyType, valueType);
                     this.deserializeFunc = (data, val) ->
                     {
-                        Object collection = YamlCollectionCreator.createCollection(this.rawType, 10);
-                        data.getMap(key, keyType, valueType);
+                        Map collection = YamlCollectionCreator.createCollection(this.rawType, 10);
+                        data.getMap(key, keyType, valueType, collection);
                         val.setPropertyValue(collection);
                     };
                 }
@@ -266,8 +266,8 @@ public class ConfigPropertyTemplateImpl<T> implements ConfigPropertyTemplate<T>
                                                                 s -> String.valueOf(this.toStringMapper.apply(val.getDeclaringConfig(), (T) s)));
                 this.deserializeFunc = (data, val) ->
                 {
-                    Object collection = YamlCollectionCreator.createCollection(this.rawType, 10);
-                    data.getMap(key, s -> this.toKeyMapper.apply(val.getDeclaringConfig(), s), valueType);
+                    Map collection = YamlCollectionCreator.createCollection(this.rawType, 10);
+                    data.getMap(key, s -> this.toKeyMapper.apply(val.getDeclaringConfig(), s), valueType, collection);
                     val.setPropertyValue(collection);
                 };
             }
@@ -355,22 +355,44 @@ public class ConfigPropertyTemplateImpl<T> implements ConfigPropertyTemplate<T>
             if (result[0] == null)
             {
                 Type keyType = ((ParameterizedType) this.genericType).getActualTypeArguments()[0];
-                if (keyType instanceof WildcardType)
+                while (true)
                 {
-                    Type[] upperBounds = ((WildcardType) keyType).getUpperBounds();
-                    keyType = (upperBounds.length == 0) ? null : upperBounds[0];
+                    if (keyType instanceof WildcardType)
+                    {
+                        Type[] upperBounds = ((WildcardType) keyType).getUpperBounds();
+                        keyType = (upperBounds.length == 0) ? null : upperBounds[0];
+                    }
+                    if (keyType instanceof ParameterizedType)
+                    {
+                        keyType = ((ParameterizedType) keyType).getRawType();
+                    }
+                    if (keyType instanceof Class)
+                    {
+                        result[0] = (Class<?>) keyType;
+                        break;
+                    }
                 }
-                result[0] = (keyType instanceof Class) ? (Class<?>) keyType : null;
             }
             if (result[1] == null)
             {
                 Type valueType = ((ParameterizedType) this.genericType).getActualTypeArguments()[1];
-                if (valueType instanceof WildcardType)
+                while (true)
                 {
-                    Type[] upperBounds = ((WildcardType) valueType).getUpperBounds();
-                    valueType = (upperBounds.length == 0) ? null : upperBounds[0];
+                    if (valueType instanceof WildcardType)
+                    {
+                        Type[] upperBounds = ((WildcardType) valueType).getUpperBounds();
+                        valueType = (upperBounds.length == 0) ? null : upperBounds[0];
+                    }
+                    if (valueType instanceof ParameterizedType)
+                    {
+                        valueType = ((ParameterizedType) valueType).getRawType();
+                    }
+                    if (valueType instanceof Class)
+                    {
+                        result[1] = (Class<?>) valueType;
+                        break;
+                    }
                 }
-                result[1] = (valueType instanceof Class) ? (Class<?>) valueType : null;
             }
         }
         if ((result[1] == null)) // key can be null

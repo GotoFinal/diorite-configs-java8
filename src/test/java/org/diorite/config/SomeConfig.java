@@ -36,6 +36,8 @@ import java.util.UUID;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.diorite.config.annotations.AsList;
 import org.diorite.config.annotations.Comment;
 import org.diorite.config.annotations.GroovyValidator;
@@ -87,6 +89,11 @@ public interface SomeConfig extends Config
     boolean removeFromNicknamesIf(Predicate<String> predicate);
     boolean removeFromNicknamesIfNot(Predicate<String> predicate);
 
+    default Map<String, List<String>> getMessages()
+    {
+        return ImmutableMap.of("first-key", Arrays.asList("first-value", "second-value"));
+    }
+
     EntityStorage getStorage();
     void setStorage(EntityStorage storage);
 
@@ -113,7 +120,8 @@ public interface SomeConfig extends Config
     @Unmodifiable
     @Comment("Just some special comment!")
     @Mapped
-    @ToStringMapperFunction("x.name") //-> simpler version
+    @ToStringMapperFunction("x.name")
+        //-> simpler version
     Collection<? extends MetaObject> getSpecialData();
     void putInSpecialData(MetaObject metaObject);
     boolean removeFromSpecialData(MetaObject metaObject);
