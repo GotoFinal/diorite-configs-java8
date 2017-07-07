@@ -199,3 +199,117 @@ static void validateAge(T age) {...}
 static T validateNickname(ConfigType config, T nickname) {...}
 static T validateNickname(T nickname, ConfigType config) {...}
 ```
+
+### Comment handling
+Using annotations to configure comments may look ugly in other classes than config itself, we can use the `PredefinedComment` annotations to setup comments, but it might look horrible if we have a lot of fields to process.  
+
+This is why the diorite library provide multiple ways to provide own comment messages, all of them are based on special `org.diorite.config.serialization.comments.DocumentComments` class.  
+One of the simplest thing to do, is just get an instance from a config template and add own comments:
+```java
+ConfigTemplate<SomeConfig> configTemplate = ConfigManager.get().getConfigFile(SomeConfig.class);
+DocumentComments comments = configTemplate.getComments();
+comments.setComment("some.path", "Comment on path");
+comments.setFooter("New footer!");
+```
+We can also fetch comments from some class to use them for other purposes: (like joining, described below)
+```java
+DocumentComments someConfigComments = DocumentComments.parseFromAnnotations(SomeConfig.class);
+```
+
+But what if you have a list of elements? 
+```yaml
+listOfEntities:
+- id: 4
+  name: Steve
+- id: 43
+  name: Kate
+  special: true
+```
+Just... ignore it:
+```java
+comments.setComment("people.name", "This comment will be above 'name' property of first entity in list.");
+comments.setComment("people.little", "Moar comments");
+```
+And you will get:
+```yaml
+people:
+- id: 4
+  # This comment will be above 'name' property of first entity in list.
+  name: Steve
+- id: 43
+  name: Kate
+  # Moar comments
+  little: true
+```
+(note that library does not duplicate comments in lists, and only place comment above first occurrence of given path.)
+If you want to use a map like this:
+```yaml
+people:
+  '4':
+    # This comment will be above 'name' property of first entity in list.
+    name: Steve
+  '43':
+    name: Kate
+    # Moar comments
+    little: true
+```
+Just use a `*` wildcard:
+```java
+comments.setComment("people.*.name", "This comment will be above 'name' property of first entity in list.");
+comments.setComment("people.*.little", "Moar comments");
+```
+
+----  
+
+But the best way to create comments are special yaml-like template files:
+```yaml
+# Header of file, first space of comments is always skipped, if you want indent a comment just use more spaces.
+#     Like this.
+#
+#But first char don't need to be a space.
+
+# This comment will appear over `node` path, yup, THIS one <-- this!
+node: value is ignored
+
+other:
+  # this comment will be ignored, as it isn't above any property.
+
+  # This comment will appear over `other.node` path
+  node:
+  
+# Map of people
+peopleMap:
+  *:
+    # This comment will be above 'name' property of first entity in list.
+    name: Steve
+    # Moar comments
+    little: true
+  
+# List of people
+peopleList:
+  # This comment will be above 'name' property of first entity in list.
+  name: Steve
+  # Moar comments
+  little: true
+# Footer, just like header
+```
+It will just read the comments that are above all nodes and construct valid `DocumentComments` for you:
+```java
+DocumentComments comments = DocumentComments.parse(new File("mycomments")); // comments can be also loaded from InputStream or Reader
+```
+----
+
+You can also combine multiple files or documents to one, so you can create a separate file for people comments and apply them on both `peopleMap` and `peopleList`:
+```java
+DocumentComments comments = DocumentComments.create();
+comments.setComment("some.path", "Comment on path");
+comments.setFooter("New footer!");
+DocumentComments peopleComments = DocumentComments.parse(new File("people-comments"));
+comments.join("peopleMap.*", peopleComments);
+// or use existing node
+comments.join("peopleList", comments.getNode("peopleMap.*"));
+// or read from some annotations
+comments.join("some.node", DocumentComments.parseFromAnnotations(SomeConfig.class));
+```
+
+End.
