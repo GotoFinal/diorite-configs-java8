@@ -1425,6 +1425,7 @@ public final class Emitter implements Emitable
                 this.stream.write('#');
             }
             this.stream.write(border);
+            this.stream.write('\n');
         }
         boolean hasRightBorder = (border != null) && ! commentRightBorder.isEmpty();
         for (int i = 0; i < comments.length; i++)
