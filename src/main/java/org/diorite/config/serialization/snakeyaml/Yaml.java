@@ -381,19 +381,34 @@ public class Yaml
      */
     public void toYamlWithComments(Object data, Writer output, DocumentComments comments)
     {
-        Serializer serializer =
-                new Serializer(this.serialization, new Emitter(this.serialization, output, this.dumperOptions), this.resolver, this.dumperOptions, null);
-        serializer.setComments(comments);
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        if (old == null)
+        {
+            Thread.currentThread().setContextClassLoader(data.getClass().getClassLoader());
+        }
         try
         {
-            serializer.open();
-            Node node = this.representer.represent(data);
-            serializer.serialize(node);
-            serializer.close();
+            Serializer serializer =
+                    new Serializer(this.serialization, new Emitter(this.serialization, output, this.dumperOptions), this.resolver, this.dumperOptions, null);
+            serializer.setComments(comments);
+            try
+            {
+                serializer.open();
+                Node node = this.representer.represent(data);
+                serializer.serialize(node);
+                serializer.close();
+            }
+            catch (IOException e)
+            {
+                throw new YAMLException(e);
+            }
         }
-        catch (IOException e)
+        finally
         {
-            throw new YAMLException(e);
+            if (old == null)
+            {
+                Thread.currentThread().setContextClassLoader(null);
+            }
         }
     }
 
@@ -406,8 +421,24 @@ public class Yaml
             serializer.open();
             while (data.hasNext())
             {
-                Node node = this.representer.represent(data.next());
-                serializer.serialize(node);
+                Object next = data.next();
+                ClassLoader old = Thread.currentThread().getContextClassLoader();
+                if ((old == null) && (next != null))
+                {
+                    Thread.currentThread().setContextClassLoader(next.getClass().getClassLoader());
+                }
+                try
+                {
+                    Node node = this.representer.represent(next);
+                    serializer.serialize(node);
+                }
+                finally
+                {
+                    if (old == null)
+                    {
+                        Thread.currentThread().setContextClassLoader(null);
+                    }
+                }
             }
             serializer.close();
         }
@@ -455,17 +486,32 @@ public class Yaml
      */
     public String toYaml(Object data, Tag rootTag, @Nullable FlowStyle flowStyle)
     {
-        FlowStyle oldStyle = this.representer.getDefaultFlowStyle();
-        if (flowStyle != null)
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        if (old == null)
         {
-            this.representer.setDefaultFlowStyle(flowStyle);
+            Thread.currentThread().setContextClassLoader(data.getClass().getClassLoader());
         }
-        List<Object> list = new ArrayList<>(1);
-        list.add(data);
-        StringWriter buffer = new StringWriter();
-        this.dumpAll(list.iterator(), buffer, rootTag);
-        this.representer.setDefaultFlowStyle(oldStyle);
-        return buffer.toString();
+        try
+        {
+            FlowStyle oldStyle = this.representer.getDefaultFlowStyle();
+            if (flowStyle != null)
+            {
+                this.representer.setDefaultFlowStyle(flowStyle);
+            }
+            List<Object> list = new ArrayList<>(1);
+            list.add(data);
+            StringWriter buffer = new StringWriter();
+            this.dumpAll(list.iterator(), buffer, rootTag);
+            this.representer.setDefaultFlowStyle(oldStyle);
+            return buffer.toString();
+        }
+        finally
+        {
+            if (old == null)
+            {
+                Thread.currentThread().setContextClassLoader(null);
+            }
+        }
     }
 
     /**
@@ -581,9 +627,24 @@ public class Yaml
     @Nullable
     public <T extends Config> T fromYaml(ConfigTemplate<T> template, Reader io)
     {
-        Composer composer = new Composer(new ParserImpl(new StreamReader(io)), new ConfigTemplateResolver(template));
-        this.constructor.setComposer(composer);
-        return (T) this.constructor.getSingleData(template.getConfigType());
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        if (old == null)
+        {
+            Thread.currentThread().setContextClassLoader(template.getConfigType().getClassLoader());
+        }
+        try
+        {
+            Composer composer = new Composer(new ParserImpl(new StreamReader(io)), new ConfigTemplateResolver(template));
+            this.constructor.setComposer(composer);
+            return (T) this.constructor.getSingleData(template.getConfigType());
+        }
+        finally
+        {
+            if (old == null)
+            {
+                Thread.currentThread().setContextClassLoader(null);
+            }
+        }
     }
 
     /**
@@ -687,9 +748,24 @@ public class Yaml
     @Nullable
     private Object loadFromReader(StreamReader sreader, Class<?> type)
     {
-        Composer composer = new Composer(new ParserImpl(sreader), this.resolver);
-        this.constructor.setComposer(composer);
-        return this.constructor.getSingleData(type);
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        if (old == null)
+        {
+            Thread.currentThread().setContextClassLoader(type.getClassLoader());
+        }
+        try
+        {
+            Composer composer = new Composer(new ParserImpl(sreader), this.resolver);
+            this.constructor.setComposer(composer);
+            return this.constructor.getSingleData(type);
+        }
+        finally
+        {
+            if (old == null)
+            {
+                Thread.currentThread().setContextClassLoader(null);
+            }
+        }
     }
 
     /**

@@ -70,7 +70,8 @@ class YamlStringSerializerImpl<T> extends AbstractRepresent implements Construct
             {
                 try
                 {
-                    type = DioriteReflectionUtils.tryGetCanonicalClass(node.getTag().getClassName());
+                    type = DioriteReflectionUtils
+                                   .tryGetCanonicalClass(node.getTag().getClassName(), this.getType().getClassLoader(), this.getClass().getClassLoader());
                 }
                 catch (YAMLException e)
                 {

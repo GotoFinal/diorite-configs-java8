@@ -176,7 +176,7 @@ public class YamlConstructor extends Constructor
                 {
                     try
                     {
-                        nodeType = DioriteReflectionUtils.tryGetCanonicalClass(node.getTag().getClassName());
+                        nodeType = DioriteReflectionUtils.tryGetCanonicalClass(node.getTag().getClassName(), this.getClass().getClassLoader());
                     }
                     catch (YAMLException e)
                     {
