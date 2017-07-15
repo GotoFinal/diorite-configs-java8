@@ -60,12 +60,12 @@ import org.yaml.snakeyaml.events.SequenceStartEvent;
 import org.yaml.snakeyaml.events.StreamEndEvent;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.reader.StreamReader;
-import org.yaml.snakeyaml.scanner.Constant;
 import org.yaml.snakeyaml.util.ArrayStack;
 
 import org.diorite.commons.math.DioriteMathUtils;
 import org.diorite.config.serialization.Serialization;
 import org.diorite.config.serialization.snakeyaml.DumperOptions;
+import org.diorite.config.serialization.snakeyaml.scanner.Constant;
 
 /**
  * <pre>
@@ -1385,7 +1385,7 @@ public final class Emitter implements Emitable
         if (commentLength < longest)
         {
             rightBorder =
-                    StringUtils.repeat(' ', DioriteMathUtils.ceil(((double) (longest - commentLength)) / commentRightBorder.length())) + '#';
+                StringUtils.repeat(' ', DioriteMathUtils.ceil(((double) (longest - commentLength)) / commentRightBorder.length())) + '#';
         }
         else
         {
