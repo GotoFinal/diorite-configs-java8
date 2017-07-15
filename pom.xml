@@ -6,7 +6,7 @@
 
     <groupId>com.gotofinal</groupId>
     <artifactId>diorite-configs-java8</artifactId>
-    <version>1.2.8</version>
+    <version>1.2.9-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

@@ -9,7 +9,7 @@ Maven:
     <dependency>
         <groupId>com.gotofinal</groupId>
         <artifactId>diorite-configs-java8</artifactId>
-        <version>1.2.7</version>
+        <version>1.2.8</version>
     </dependency>
 </dependencies>
 <repositories>
