@@ -63,6 +63,7 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
     protected volatile Supplier<CharsetEncoder>         charsetEncoder
     protected volatile Supplier<CharsetDecoder>         charsetDecoder
     protected volatile File                             bindFile
+    protected volatile ClassLoader                      contextClassLoader;
 
     protected final Map<String, Object> metadata = Collections.<String, Object> synchronizedMap(new HashMap<>(3))
 
@@ -387,6 +388,20 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
+    ClassLoader contextClassLoader()
+    {
+        return this.@contextClassLoader
+    }
+
+    @Override
+    @CompileStatic
+    void contextClassLoader(@Nullable ClassLoader classLoader)
+    {
+        this.@contextClassLoader = classLoader;
+    }
+
+    @Override
+    @CompileStatic
     File bindFile()
     {
         return this.@bindFile
@@ -414,7 +429,26 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
     @CompileStatic
     void save(@WillNotClose Writer writer)
     {
-        Serialization.getInstance().toYamlWithComments(this, writer, this.@template.getComments())
+        Thread current = Thread.currentThread();
+        ClassLoader oldContext = null;
+        boolean customContext = false;
+        if (this.@contextClassLoader != null)
+        {
+            customContext = true;
+            oldContext = current.getContextClassLoader();
+            current.setContextClassLoader(this.@contextClassLoader)
+        }
+        try
+        {
+            Serialization.getInstance().toYamlWithComments(this, writer, this.@template.getComments())
+        }
+        finally
+        {
+            if (customContext)
+            {
+                current.setContextClassLoader(oldContext);
+            }
+        }
     }
 
     @Override
@@ -432,14 +466,33 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
     @CompileStatic
     void load(@WillNotClose Reader reader)
     {
-        Config fromYaml = Serialization.getInstance().fromYaml(reader, this.@template.getConfigType()) as Config
-        if (fromYaml == null)
+        Thread current = Thread.currentThread();
+        ClassLoader oldContext = null;
+        boolean customContext = false;
+        if (this.@contextClassLoader != null)
         {
-            return
+            customContext = true;
+            oldContext = current.getContextClassLoader();
+            current.setContextClassLoader(this.@contextClassLoader)
         }
-        fromYaml.asMap().forEach({ String key, Object value ->
-            this.setProperty(key, value)
-        })
+        try
+        {
+            Config fromYaml = Serialization.getInstance().fromYaml(reader, this.@template.getConfigType()) as Config
+            if (fromYaml == null)
+            {
+                return
+            }
+            fromYaml.asMap().forEach({ String key, Object value ->
+                this.setProperty(key, value)
+            })
+        }
+        finally
+        {
+            if (customContext)
+            {
+                current.setContextClassLoader(oldContext);
+            }
+        }
     }
 
     @Override

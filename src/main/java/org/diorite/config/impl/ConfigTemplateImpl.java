@@ -819,6 +819,8 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
     @Override
     public T create()
     {
-        return this.implementationProvider.createImplementation(this);
+        T implementation = this.implementationProvider.createImplementation(this);
+        implementation.contextClassLoader(this.type.getClassLoader());
+        return implementation;
     }
 }

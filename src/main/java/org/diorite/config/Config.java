@@ -369,6 +369,11 @@ public interface Config
         this.decoder(() -> charset.newDecoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT));
     }
 
+    @Nullable
+    ClassLoader contextClassLoader();
+
+    void contextClassLoader(@Nullable ClassLoader classLoader);
+
     /**
      * Returns bound file if exists.
      *
