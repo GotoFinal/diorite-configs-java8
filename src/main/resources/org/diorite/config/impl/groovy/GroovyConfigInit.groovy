@@ -40,8 +40,6 @@ import org.diorite.config.impl.ConfigPropertyValueImpl
 import org.diorite.config.impl.NestedNodesHelper
 import org.diorite.config.serialization.Serialization
 
-import javax.annotation.Nullable
-import javax.annotation.WillNotClose
 import java.nio.charset.CharsetDecoder
 import java.nio.charset.CharsetEncoder
 import java.nio.charset.StandardCharsets
@@ -212,28 +210,28 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
-    public <T> T get(String key, @Nullable T defValue)
+    public <T> T get(String key, T defValue)
     {
         return this.get(StringUtils.splitPreserveAllTokens(key, ConfigTemplate.SEPARATOR), defValue, null)
     }
 
     @Override
     @CompileStatic
-    public <T> T get(String[] key, @Nullable T defValue)
+    public <T> T get(String[] key, T defValue)
     {
         return this.get(key, defValue, null)
     }
 
     @Override
     @CompileStatic
-    public <T> T get(String key, @Nullable T defValue, @Nullable Class<T> type)
+    public <T> T get(String key, T defValue, Class<T> type)
     {
         return this.get(StringUtils.splitPreserveAllTokens(key, ConfigTemplate.SEPARATOR), defValue, type)
     }
 
     @Override
     @CompileStatic
-    public <T> T get(String[] keys, @Nullable T defValue, @Nullable Class<T> type)
+    public <T> T get(String[] keys, T defValue, Class<T> type)
     {
         if (keys.length == 0)
         {
@@ -289,14 +287,14 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
-    void set(String key, @Nullable Object value)
+    void set(String key, Object value)
     {
         this.set(StringUtils.splitPreserveAllTokens(key, ConfigTemplate.SEPARATOR), value)
     }
 
     @Override
     @CompileStatic
-    void set(String[] keys, @Nullable Object value)
+    void set(String[] keys, Object value)
     {
         if (keys.length == 0)
         {
@@ -395,7 +393,7 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
-    void contextClassLoader(@Nullable ClassLoader classLoader)
+    void contextClassLoader(ClassLoader classLoader)
     {
         this.@contextClassLoader = classLoader;
     }
@@ -409,7 +407,7 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
-    void bindFile(@Nullable File file)
+    void bindFile(File file)
     {
         this.@bindFile = file
     }
@@ -427,7 +425,7 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
-    void save(@WillNotClose Writer writer)
+    void save(Writer writer)
     {
         Thread current = Thread.currentThread();
         ClassLoader oldContext = null;
@@ -464,7 +462,7 @@ abstract class AbstractConfigGroovyImpl extends AbstractConfigGroovy implements 
 
     @Override
     @CompileStatic
-    void load(@WillNotClose Reader reader)
+    void load(Reader reader)
     {
         Thread current = Thread.currentThread();
         ClassLoader oldContext = null;
@@ -725,7 +723,7 @@ abstract class ConfigBaseGroovyImpl extends AbstractConfigGroovyImpl implements 
 
     @Override
     @CompileStatic
-    public <T> T get(String[] keys, @Nullable T defValue, @Nullable Class<T> type)
+    public <T> T get(String[] keys, T defValue, Class<T> type)
     {
         if (keys.length == 0)
         {
@@ -775,7 +773,7 @@ abstract class ConfigBaseGroovyImpl extends AbstractConfigGroovyImpl implements 
     }
 
     @Override
-    void set(String[] keys, @Nullable Object value)
+    void set(String[] keys, Object value)
     {
         if (keys.length == 0)
         {
