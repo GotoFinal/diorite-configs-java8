@@ -661,7 +661,14 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
 
         Map<String, BiFunction<Config, String, Object>> toKeyMappers = new HashMap<>(methods.size());
         Map<String, BiFunction<Config, Object, String>> toStringMappers = new HashMap<>(methods.size());
-        this.scanMethods(new LinkedList<>(methods), toKeyMappers, toStringMappers, new LinkedHashSet<>(10), new LinkedHashSet<>(10));
+
+        this.scanMethods(
+                new LinkedList<>(methods),
+                toKeyMappers,
+                toStringMappers,
+                new LinkedHashSet<>(10),
+                new LinkedHashSet<>(10)
+        );
 
         Map<String, ConfigPropertyTemplateImpl<?>> orderedProperties = new LinkedHashMap<>();
 
