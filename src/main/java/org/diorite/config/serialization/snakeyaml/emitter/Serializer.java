@@ -64,14 +64,11 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.resolver.Resolver;
 import org.yaml.snakeyaml.serializer.SerializerException;
 
-import org.diorite.commons.reflections.DioriteReflectionUtils;
 import org.diorite.config.serialization.Serialization;
 import org.diorite.config.serialization.comments.DocumentComments;
 
 public final class Serializer
 {
-    private static final boolean hasAnchorGenerator = DioriteReflectionUtils.tryGetCanonicalClass("org.yaml.snakeyaml.serializer.AnchorGenerator") != null;
-
     interface AnchorGenerator  // compatibility
     {
         String nextAnchor(Node node);
@@ -115,16 +112,8 @@ public final class Serializer
         this.serializedNodes = new HashSet<>(50);
         this.anchors = new HashMap<>(10);
 
-        // compatibility
-        if (! hasAnchorGenerator)
-        {
-            this.anchorGenerator = new NumberAnchorGenerator();
-        }
-        else
-        {
-            Object anchorGenerator = opts.getAnchorGenerator();
-            this.anchorGenerator = ((org.yaml.snakeyaml.serializer.AnchorGenerator) anchorGenerator)::nextAnchor;
-        }
+        this.anchorGenerator = new NumberAnchorGenerator();
+
         this.closed = null;
         this.explicitRoot = rootTag;
     }
