@@ -41,9 +41,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -115,7 +115,7 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
         {
             return;
         }
-        for (Method method : type.getDeclaredMethods())
+        for (Method method : MethodOrderRetrieveHelper.getDeclaredMethodsInOrder(type))
         {
             MethodInvoker methodInvoker = new MethodInvoker(method);
             if ((methodInvoker.isPrivate() || methodInvoker.isDefault()) && (methodInvoker.getParameterCount() == 0) &&
@@ -517,7 +517,7 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
             if (methodInvoker.isAnnotationPresent(Validator.class))
             {
                 Validator annotation = methodInvoker.getAnnotation(Validator.class);
-                Collection<String> properties = new HashSet<>(Arrays.asList(annotation.value()));
+                Collection<String> properties = new LinkedHashSet<>(Arrays.asList(annotation.value()));
                 this.processValidators(methodInvoker, properties, processedValidators);
                 if (properties.isEmpty())
                 {
@@ -661,11 +661,25 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
 
         Map<String, BiFunction<Config, String, Object>> toKeyMappers = new HashMap<>(methods.size());
         Map<String, BiFunction<Config, Object, String>> toStringMappers = new HashMap<>(methods.size());
-        this.scanMethods(new LinkedList<>(methods), toKeyMappers, toStringMappers, new HashSet<>(10), new HashSet<>(10));
+
+        this.scanMethods(
+                new LinkedList<>(methods),
+                toKeyMappers,
+                toStringMappers,
+                new LinkedHashSet<>(10),
+                new LinkedHashSet<>(10)
+        );
+
+        Map<String, ConfigPropertyTemplateImpl<?>> orderedProperties = new LinkedHashMap<>();
+
+        for (String orderedPropertyName : this.order)
+        {
+            orderedProperties.put(orderedPropertyName, this.mutableProperties.get(orderedPropertyName));
+        }
 
         for (Entry<String, BiFunction<Config, String, Object>> entry : toKeyMappers.entrySet())
         {
-            ConfigPropertyTemplateImpl<?> propertyTemplate = this.mutableProperties.get(entry.getKey());
+            ConfigPropertyTemplateImpl<?> propertyTemplate = orderedProperties.get(entry.getKey());
             if (propertyTemplate == null)
             {
                 throw new IllegalStateException("Unknown property: " + entry.getKey());
@@ -675,7 +689,7 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
         }
         for (Entry<String, BiFunction<Config, Object, String>> entry : toStringMappers.entrySet())
         {
-            ConfigPropertyTemplateImpl<?> propertyTemplate = this.mutableProperties.get(entry.getKey());
+            ConfigPropertyTemplateImpl<?> propertyTemplate = orderedProperties.get(entry.getKey());
             if (propertyTemplate == null)
             {
                 throw new IllegalStateException("Unknown property: " + entry.getKey());
@@ -684,18 +698,14 @@ public class ConfigTemplateImpl<T extends Config> implements ConfigTemplate<T>
             propertyTemplate.setToStringMapper((BiFunction) entry.getValue());
         }
 
-        List<ConfigPropertyTemplateImpl<?>> templates = new ArrayList<>(this.mutableProperties.size());
-        templates.addAll(this.mutableProperties.values());
         this.mutableProperties.clear();
-        this.order.clear();
-        Map<String, ConfigPropertyTemplate<?>> orderedProperties = new LinkedHashMap<>(templates.size());
-        for (ConfigPropertyTemplateImpl<?> template : templates)
+
+        for (ConfigPropertyTemplateImpl<?> template : orderedProperties.values())
         {
             template.init();
             this.mutableProperties.put(template.getName(), template);
-            this.order.add(template.getName());
-            orderedProperties.put(template.getName(), template);
         }
+
         this.orderedProperties = Collections.unmodifiableMap(orderedProperties);
 
         Map<ConfigPropertyActionInstance, ConfigPropertyTemplate<?>> actions = this.actions;
