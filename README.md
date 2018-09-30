@@ -9,7 +9,7 @@ Maven:
     <dependency>
         <groupId>com.gotofinal</groupId>
         <artifactId>diorite-configs-java8</artifactId>
-        <version>1.3.1</version>
+        <version>1.4.1</version>
     </dependency>
 </dependencies>
 <repositories>
@@ -19,6 +19,18 @@ Maven:
         <url>https://repo.diorite.org/repository/diorite/</url>
     </repository>
 </repositories>
+```
+Gradle:
+```gradle
+repositories {
+    maven {
+        url 'https://repo.diorite.org/repository/diorite/'
+    }
+}
+
+dependencies {
+    compile group: 'com.gotofinal', name: 'diorite-configs-java8', version: '1.4.1'
+}
 ```
 Jenkins: https://diorite.org/jenkins/job/diorite-configs-java8/
 
