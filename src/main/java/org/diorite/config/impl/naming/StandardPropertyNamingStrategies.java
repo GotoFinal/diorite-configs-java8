@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.diorite.commons.ParserContext;
 
 public final class StandardPropertyNamingStrategies
@@ -14,13 +15,15 @@ public final class StandardPropertyNamingStrategies
     private static final Map<String, PropertyNameStrategy> PROPERTY_NAMING_STRATEGIES = new HashMap<>();
     private static final char[]                            SPLIT_CHARS = {' ', '-', '.', ',', '_', '/', '\\', '=', '+', ':', ';'};
 
-    public static final String                             IDENTITY = "IDENTITY";
-    public static final String                             LOWER_CASE = "LOWER_CASE";
-    public static final String                             UPPER_CASE = "UPPER_CASE";
-    public static final String                             SNAKE_LOWER_CASE = "SNAKE_LOWER_CASE";
-    public static final String                             SNAKE_UPPER_CASE = "SNAKE_UPPER_CASE";
-    public static final String                             HYPHEN_LOWER_CASE = "HYPHEN_LOWER_CASE";
-    public static final String                             HYPHEN_UPPER_CASE = "HYPHEN_UPPER_CASE";
+    public static final String                             IDENTITY          = "IDENTITY";
+    public static final String                             LOWER_CASE        = "LOWER_CASE";
+    public static final String                             UPPER_CASE        = "UPPER_CASE";
+    public static final String                             CAMEL_CASE        = "CAMEL_CASE";
+    public static final String                             UPPER_CAMEL_CASE  = "UPPER_CAMEL_CASE";
+    public static final String                             SNAKE_CASE        = "SNAKE_CASE";
+    public static final String                             UPPER_SNAKE_CASE  = "UPPER_SNAKE_CASE";
+    public static final String                             HYPHEN_CASE       = "HYPHEN_CASE";
+    public static final String                             UPPER_HYPHEN_CASE = "UPPER_HYPHEN_CASE";
 
     static
     {
@@ -31,11 +34,14 @@ public final class StandardPropertyNamingStrategies
         registerStrategy(LOWER_CASE, String::toLowerCase);
         registerStrategy(UPPER_CASE, String::toUpperCase);
 
-        registerStrategy(SNAKE_LOWER_CASE, propertyName -> transform(propertyName, '_', false, false));
-        registerStrategy(SNAKE_UPPER_CASE, propertyName -> transform(propertyName, '_', true, true));
+        registerStrategy(CAMEL_CASE, propertyName -> transform(propertyName, '\0', false, true));
+        registerStrategy(UPPER_CAMEL_CASE, propertyName -> transform(propertyName, '\0', true, true));
 
-        registerStrategy(HYPHEN_LOWER_CASE, propertyName -> transform(propertyName, '-', false, false));
-        registerStrategy(HYPHEN_UPPER_CASE, propertyName -> transform(propertyName, '-', true, true));
+        registerStrategy(SNAKE_CASE, propertyName -> transform(propertyName, '_', false, false));
+        registerStrategy(UPPER_SNAKE_CASE, propertyName -> transform(propertyName, '_', true, true));
+
+        registerStrategy(HYPHEN_CASE, propertyName -> transform(propertyName, '-', false, false));
+        registerStrategy(UPPER_HYPHEN_CASE, propertyName -> transform(propertyName, '-', true, true));
     }
 
     public static void registerStrategy(String strategyName, PropertyNameStrategy propertyNameStrategy)
@@ -68,7 +74,15 @@ public final class StandardPropertyNamingStrategies
                 nameBuilder.append(wordSeparator);
             }
             String word = words.get(wordIndex);
-            nameBuilder.append(capitalize(word, first ? capitalizeFirstWord : capitalizeWords));
+            if ((first && capitalizeFirstWord) || (!first && capitalizeWords))
+            {
+                nameBuilder.append(WordUtils.capitalize(word));
+            }
+            else
+            {
+                nameBuilder.append(word.toLowerCase());
+            }
+
             first = false;
         }
 
@@ -145,6 +159,7 @@ public final class StandardPropertyNamingStrategies
                         words.set(words.size() - 1, words.get(words.size() - 1) + lastOneLetter);
                         wordBuilder = new StringBuilder();
                         wordBuilder.append(c);
+                        endWord = false;
                         continue;
                     }
                 }
@@ -153,7 +168,10 @@ public final class StandardPropertyNamingStrategies
                     lastOneLetter = null;
                 }
                 endWord = false;
-                words.add(wordBuilder.toString());
+                if (wordBuilder.length() != 0)
+                {
+                    words.add(wordBuilder.toString());
+                }
                 wordBuilder = new StringBuilder();
                 wordBuilder.append(c);
             }
@@ -176,27 +194,4 @@ public final class StandardPropertyNamingStrategies
         }
         return words;
     }
-
-    private static String capitalize(String str, boolean capitalize)
-    {
-        StringBuilder wordBuilder = new StringBuilder(str.length());
-        boolean firstLetter = true;
-        for (int i = 0; i < str.length(); i++)
-        {
-            char c = str.charAt(i);
-            if (Character.isAlphabetic(c))
-            {
-                if (firstLetter)
-                {
-                    wordBuilder.append(capitalize ? Character.toUpperCase(c) : Character.toLowerCase(c));
-                    firstLetter = false;
-                    continue;
-                }
-                c = Character.toLowerCase(c);
-            }
-            wordBuilder.append(c);
-        }
-        return wordBuilder.toString();
-    }
-
 }
