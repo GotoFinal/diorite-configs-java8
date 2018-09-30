@@ -38,7 +38,6 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import org.diorite.commons.arrays.DioriteArrayUtils;
 import org.diorite.commons.reflections.DioriteReflectionUtils;
 import org.diorite.config.Config;
@@ -56,8 +55,11 @@ import org.diorite.config.annotations.HexNumber;
 import org.diorite.config.annotations.MapTypes;
 import org.diorite.config.annotations.Mapped;
 import org.diorite.config.annotations.PaddedNumber;
+import org.diorite.config.annotations.PropertyNamingStrategy;
 import org.diorite.config.annotations.PropertyType;
 import org.diorite.config.annotations.Unmodifiable;
+import org.diorite.config.impl.naming.PropertyNameStrategy;
+import org.diorite.config.impl.naming.StandardPropertyNamingStrategies;
 import org.diorite.config.serialization.DeserializationData;
 import org.diorite.config.serialization.SerializationData;
 import org.diorite.config.serialization.comments.DocumentComments;
@@ -98,6 +100,13 @@ public class ConfigPropertyTemplateImpl<T> implements ConfigPropertyTemplate<T>
         this.annotatedElement = annotatedElement;
         this.originalName = name;
         Comment comment = this.annotatedElement.getAnnotation(Comment.class);
+
+        if (this.template.getConfigType().isAnnotationPresent(PropertyNamingStrategy.class))
+        {
+            PropertyNameStrategy strategy = StandardPropertyNamingStrategies.byName(this.template.getConfigType().getAnnotation(PropertyNamingStrategy.class).value());
+            name = strategy.applyStrategy(name);
+        }
+
         if (this.annotatedElement.isAnnotationPresent(CustomKey.class))
         {
             this.name = this.annotatedElement.getAnnotation(CustomKey.class).value();
